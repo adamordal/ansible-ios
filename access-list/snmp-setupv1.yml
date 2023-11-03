@@ -1,0 +1,67 @@
+#example execution of this playbook
+#ansible-playbook snmp-setupv1.yml -e "collector_ip=['192.168.1.1','192.168.1.2'] acl_name=test snmp_string=welcome1"
+---
+- name: Create SNMP ACL and enable SNMP
+  hosts: all
+  gather_facts: no
+  #vars_files: ##uncomment and update this section to use a vault file for password
+  #  - ../passwords.yml
+
+  tasks: 
+
+  ## IOS TASKS
+    - name: remove existing acl
+      ios_config:
+        lines: no ip access-list extended {{ acl_name }}
+      when: ansible_network_os == 'cisco.ios.ios'
+
+    - name: load new acl into extended acl
+      ios_config:
+        lines: "{{ (index + 1) * 10}} permit ip host {{ item }} any log"
+        parents: ip access-list extended {{ acl_name }}
+        match: line
+      loop: "{{ collector_ip }}"
+      loop_control:
+        index_var: index
+      when: ansible_network_os == 'cisco.ios.ios'
+
+    - name: enable snmp on device
+      ios_config:
+        lines:
+          - "snmp-server community {{ snmp_string}} RO {{ acl_name }}"
+        match: line
+      when: ansible_network_os == 'cisco.ios.ios'
+
+    - name: save running to startup when modified
+      ios_config:
+        save_when: changed
+      when: ansible_network_os == 'cisco.ios.ios'
+
+## NXOS Tasks
+    - name: remove existing acl (nxos)
+      cisco.nxos.nxos_config:
+          lines: no ip access-list {{ acl_name }}
+      when: ansible_network_os == 'cisco.nxos.nxos'
+
+    - name: Load new entries into nxos acl
+      cisco.nxos.nxos_config:
+        lines: "{{ (index + 1) * 10}} permit ip {{ item }}/32 any log"
+        parents: ip access-list {{ acl_name }}
+        match: line
+      loop: "{{ collector_ip }}"
+      loop_control:
+        index_var: index
+      when: ansible_network_os == 'cisco.nxos.nxos'          
+
+    - name: enable snmp on nexus device
+      cisco.nxos.nxos_config:
+        lines:
+          - "snmp-server community {{ snmp_string}} use-ipv4acl {{ acl_name }}"
+          - "snmp-server community {{ snmp_string}} group network-operator"
+        match: line
+      when: ansible_network_os == 'cisco.nxos.nxos'
+
+    - name: save running to startup when modified
+      cisco.nxos.nxos_config:
+        save_when: changed
+      when: ansible_network_os == 'cisco.nxos.nxos'

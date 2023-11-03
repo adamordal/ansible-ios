@@ -1,0 +1,8 @@
+---
+- name: Create SNMP ACL and enable SNMP
+  hosts: all
+  gather_facts: yes
+
+  tasks:
+  - debug:
+      msg:  "{{ansible_facts['net_system']}}"
