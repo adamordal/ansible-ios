@@ -6,7 +6,7 @@
   gather_facts: yes
   tasks:
   - set_fact: 
-     collector_ip: "{{ansible_eth0.ipv4.address}}"
+     collector_ip: "{{ansible_facts['all_ipv4_addresses'][0]}}"
 
 - name: Create SNMP ACL and enable SNMP
   hosts: all
