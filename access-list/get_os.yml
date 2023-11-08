@@ -1,0 +1,47 @@
+---
+# - name: Get OS type and set variable
+#   hosts: all
+#   gather_facts: no
+#
+#   tasks:
+   - block:
+      - name: Get raw show version
+        ansible.builtin.raw: show version
+        register: show_version
+        vars:
+         ansible_connection: ssh
+
+      - set_fact: 
+          ios_check: "{{show_version['stdout'] | regex_findall( 'IOS Software' )}}"
+        vars:
+         ansible_connection: ssh
+
+      - set_fact: 
+          nxos_check: "{{show_version['stdout'] | regex_findall( 'NX-OS' )}}"
+        vars:
+         ansible_connection: ssh
+
+      - set_fact:
+         ansible_network_os: cisco.ios.ios
+        when: ios_check | length > 0
+        vars:
+         ansible_connection: ssh
+
+      - set_fact:
+         ansible_network_os: cisco.nxos.nxos
+        when: nxos_check | length > 0
+        vars:
+         ansible_connection: ssh
+     when: ansible_network_os is not defined
+
+#   - name: Gather IOS facts
+#     cisco.ios.ios_facts:
+#     when: ansible_network_os == 'cisco.ios.ios'
+#
+#   - name: Gather NXOS facts
+#     cisco.nxos.nxos_facts:
+#     when: ansible_network_os == 'cisco.nxos.nxos'
+#       
+#   - name: View Facts
+#     debug:
+#       msg: "{{ansible_network_os}}"
