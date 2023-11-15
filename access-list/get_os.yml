@@ -6,19 +6,23 @@
         vars:
          ansible_connection: ssh
 
-      - set_fact: 
-          ios_check: "{{show_version['stdout'] | regex_findall( 'IOS Software' )}}"
-        vars:
-         ansible_connection: ssh
+##IOS Tasks
 
       - set_fact: 
-          nxos_check: "{{show_version['stdout'] | regex_findall( 'NX-OS' )}}"
+          ios_check: "{{show_version['stdout'] | regex_findall( 'IOS Software' )}}"
         vars:
          ansible_connection: ssh
 
       - set_fact:
          ansible_network_os: cisco.ios.ios
         when: ios_check | length > 0
+        vars:
+         ansible_connection: ssh
+
+##NXOS Tasks
+
+      - set_fact: 
+          nxos_check: "{{show_version['stdout'] | regex_findall( 'NX-OS' )}}"
         vars:
          ansible_connection: ssh
 

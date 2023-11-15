@@ -9,6 +9,7 @@
      collector_ip: "{{ansible_facts['all_ipv4_addresses'][0]}}"
     vars:
       ansible_connection: ssh
+    delegate_to: localhost
 
 - name: Create SNMP ACL and enable SNMP
   hosts: all
