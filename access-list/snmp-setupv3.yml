@@ -68,6 +68,19 @@
 
 ##IOS Tasks##
 
+    - name: check for old snmp string
+      cisco.ios.ios_command:
+        commands: "show run | in snmp-server host {{collector_ip}} version 2c {{snmp_string}}"
+      register: old_snmp_string
+      when: ansible_network_os == 'cisco.ios.ios'
+
+    - name: remove old snmp string
+      ios_config:
+        lines:
+          - "no snmp-server host {{collector_ip}} version 2c {{snmp_string}}"
+        match: line
+      when: ansible_network_os == 'cisco.ios.ios' and old_snmp_string['stdout'][0]|length > 0
+
     - name: load new entry into existing acl
       ios_config:
         lines:
