@@ -21,6 +21,7 @@
     ace_entry: []
     ace_name: []
     source_network: []
+    ansible_connection: network_cli
 
   tasks: 
     - name: Include task list in play
